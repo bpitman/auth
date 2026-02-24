@@ -20,6 +20,6 @@ lazy val app = (project in file("app"))
   .dependsOn(javaLib)
   .settings(
     name := "auth-app",
-    scalaVersion := "3.3.4",
-    crossScalaVersions := Seq("2.13.15", "3.3.4")
+    scalaVersion := "3.8.1",
+    crossScalaVersions := Seq("2.13.18", "3.8.1")
   )
