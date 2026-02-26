@@ -2,8 +2,9 @@
 
 A multi-project SBT build containing:
 
-- **java-lib** — A Java library
-- **app** — A Scala application (cross-compiled for 2.13 and 3) that depends on `java-lib`
+- **auth-core** — A Java library
+- **auth-backend** — A Scala application (cross-compiled for 2.13 and 3) that depends on `auth-core`
+- **auth-frontend** — A Scala Spring Boot server that serves a React (Vite + TypeScript) client application
 
 ## Build
 
@@ -15,5 +16,19 @@ sbt test
 ## Cross-compile the Scala app
 
 ```bash
-sbt +app/compile
+sbt +auth-backend/compile
 ```
+
+## Build the frontend UI
+
+```bash
+cd auth-frontend/ui && npm install && npm run build
+```
+
+Then run the frontend server:
+
+```bash
+sbt auth-frontend/run
+```
+
+Visit http://localhost:3000 to see the app.
