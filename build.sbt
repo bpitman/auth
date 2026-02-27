@@ -109,11 +109,11 @@ lazy val `auth-backend` = (project in file("auth-backend"))
       Dependencies.pekkoTestkit      % Test,
       Dependencies.atlasPekkoTestkit % Test,
       Dependencies.munit             % Test,
-      Dependencies.mockClientsDynamodb(scalaBinaryVersion.value) % Test,
-      Dependencies.mockClientsKms(scalaBinaryVersion.value) % Test,
-      Dependencies.mockClientsSes(scalaBinaryVersion.value) % Test,
-      Dependencies.mockClientsSns(scalaBinaryVersion.value) % Test,
-      Dependencies.mockClientsRedis(scalaBinaryVersion.value) % Test
+      Dependencies.mockClientsDynamodb % Test,
+      Dependencies.mockClientsKms      % Test,
+      Dependencies.mockClientsSes      % Test,
+      Dependencies.mockClientsSns      % Test,
+      Dependencies.mockClientsRedis    % Test
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     noSnapshotDeps := {

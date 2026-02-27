@@ -34,16 +34,11 @@ object Dependencies {
 
   // mock-clients
   val mockClientsVersion    = "0.1.8"
-  def mockClientsDynamodb(scalaBinVer: String) =
-    "com.pcpitman" % s"mock-clients-dynamodb_$scalaBinVer" % mockClientsVersion
-  def mockClientsKms(scalaBinVer: String) =
-    "com.pcpitman" % s"mock-clients-kms_$scalaBinVer" % mockClientsVersion
-  def mockClientsSes(scalaBinVer: String) =
-    "com.pcpitman" % s"mock-clients-ses_$scalaBinVer" % mockClientsVersion
-  def mockClientsSns(scalaBinVer: String) =
-    "com.pcpitman" % s"mock-clients-sns_$scalaBinVer" % mockClientsVersion
-  def mockClientsRedis(scalaBinVer: String) =
-    "com.pcpitman" % s"mock-clients-redis_$scalaBinVer" % mockClientsVersion
+  val mockClientsDynamodb   = "com.pcpitman" %% "mock-clients-dynamodb" % mockClientsVersion
+  val mockClientsKms        = "com.pcpitman" %% "mock-clients-kms"      % mockClientsVersion
+  val mockClientsSes        = "com.pcpitman" %% "mock-clients-ses"      % mockClientsVersion
+  val mockClientsSns        = "com.pcpitman" %% "mock-clients-sns"      % mockClientsVersion
+  val mockClientsRedis      = "com.pcpitman" %% "mock-clients-redis"    % mockClientsVersion
 
   // Test
   val atlasPekkoTestkit = "com.netflix.atlas_v1"       %% "atlas-pekko-testkit" % atlas
