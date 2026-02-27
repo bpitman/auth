@@ -33,7 +33,7 @@ object Dependencies {
   val springBootWeb     = "org.springframework.boot"     % "spring-boot-starter-web" % "3.4.3"
 
   // mock-clients
-  val mockClientsVersion    = "0.1.4"
+  val mockClientsVersion    = "0.1.8"
   def mockClientsDynamodb(scalaBinVer: String) =
     "com.pcpitman" % s"mock-clients-dynamodb_$scalaBinVer" % mockClientsVersion
   def mockClientsKms(scalaBinVer: String) =

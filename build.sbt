@@ -45,6 +45,14 @@ ThisBuild / version := {
   }
 }
 
+ThisBuild / resolvers += "GitHub Packages" at "https://maven.pkg.github.com/bpitman/mock-clients"
+ThisBuild / credentials += Credentials(
+  "GitHub Package Registry",
+  "maven.pkg.github.com",
+  sys.env.getOrElse("GITHUB_ACTOR", ""),
+  sys.env.getOrElse("GITHUB_TOKEN", "")
+)
+
 val noSnapshotDeps = taskKey[Unit]("Fail if release build has SNAPSHOT dependencies")
 
 val npmBuild = taskKey[Unit]("Run npm build for frontend UI")

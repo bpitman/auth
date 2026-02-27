@@ -1,0 +1,9 @@
+secret:
+  ignored_matches:
+  - match: a49a7613a9965278211a18b57f2b24cf94a95aca02b39cdf5fd53883ada9914b
+    name: Generic Private Key - commit://8ea527920cbfa8850751495afcd9d6087ca38ce8/certs/localhost.key
+  - match: 10731a2e0892211d25b610ce91baced024b851e96886ae878d9ad81b50aacda3
+    name: Generic Private Key - commit://8ea527920cbfa8850751495afcd9d6087ca38ce8/certs/root-ca.key
+  - match: 9aada68e756e94c17f90898da0c9bbccb049aa2492d524d5b72c7c9fb6894f87
+    name: Generic Password - commit://8ea527920cbfa8850751495afcd9d6087ca38ce8/auth-backend/src/test/scala/com/pcpitman/auth/PasswordSuite.scala
+version: 2
