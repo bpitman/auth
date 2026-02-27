@@ -32,6 +32,9 @@ jobs:
 
       - uses: sbt/setup-sbt@v1
 
+      - name: Install frontend dependencies
+        run: npm ci --prefix auth-frontend/ui
+
       - name: Compile
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
