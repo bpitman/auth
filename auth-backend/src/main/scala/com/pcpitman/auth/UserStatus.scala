@@ -4,7 +4,7 @@ enum UserStatus(val value: String) {
   case Registered extends UserStatus("REGISTERED")
   case EmailValidated extends UserStatus("EMAIL_VALIDATED")
   case MobilePending extends UserStatus("MOBILE_PENDING")
-  case MobileValidated extends UserStatus("MOBILE_VALIDATED")
+  case Authenticated extends UserStatus("AUTHENTICATED")
 }
 
 object UserStatus {

@@ -1,6 +1,7 @@
 package com.pcpitman.auth
 
 import java.time.Clock
+import java.time.LocalDate
 import java.util.concurrent.ExecutionException
 
 import scala.jdk.CollectionConverters.*
@@ -76,7 +77,7 @@ class DynamoDbSuite extends FunSuite {
   }
 
   test("putUser stores and getUserByEmail retrieves") {
-    db.putUser("id-john", "John", "Doe", "john@example.com", "encrypted123", "token-john")
+    db.putUser("id-john", "John", "Doe", "john@example.com", "encrypted123", "token-john", LocalDate.of(1990, 1, 15))
     val user = db.getUserByEmail("john@example.com")
     assert(user.isDefined)
     assertEquals(user.get("firstName").s(), "John")
@@ -84,11 +85,12 @@ class DynamoDbSuite extends FunSuite {
     assertEquals(user.get("email").s(), "john@example.com")
     assertEquals(user.get("password").s(), "encrypted123")
     assertEquals(user.get("id").s(), "id-john")
+    assertEquals(user.get("birthDate").s(), "1990-01-15")
   }
 
   test("putUser stores status=REGISTERED and emailValidationToken") {
     val token = "ab" * 32
-    db.putUser("id-val", "Val", "User", "val@example.com", "enc", token)
+    db.putUser("id-val", "Val", "User", "val@example.com", "enc", token, LocalDate.of(1990, 1, 15))
     val user = db.getUserByEmail("val@example.com")
     assert(user.isDefined)
     assertEquals(user.get("status").s(), UserStatus.Registered.value)
@@ -96,9 +98,9 @@ class DynamoDbSuite extends FunSuite {
   }
 
   test("putUser with duplicate email fails") {
-    db.putUser("id-dup1", "Dup", "One", "dup@example.com", "enc", "token-dup1")
+    db.putUser("id-dup1", "Dup", "One", "dup@example.com", "enc", "token-dup1", LocalDate.of(1990, 1, 15))
     val ex = intercept[ExecutionException] {
-      db.putUser("id-dup2", "Dup", "Two", "dup@example.com", "enc", "token-dup2")
+      db.putUser("id-dup2", "Dup", "Two", "dup@example.com", "enc", "token-dup2", LocalDate.of(1990, 1, 15))
     }
     assert(ex.getCause.isInstanceOf[TransactionCanceledException])
     val reasons = ex.getCause.asInstanceOf[TransactionCanceledException].cancellationReasons.asScala
@@ -108,9 +110,9 @@ class DynamoDbSuite extends FunSuite {
   }
 
   test("putUser with duplicate token fails") {
-    db.putUser("id-tok1", "Tok", "One", "tok1@example.com", "enc", "shared-token")
+    db.putUser("id-tok1", "Tok", "One", "tok1@example.com", "enc", "shared-token", LocalDate.of(1990, 1, 15))
     val ex = intercept[ExecutionException] {
-      db.putUser("id-tok2", "Tok", "Two", "tok2@example.com", "enc", "shared-token")
+      db.putUser("id-tok2", "Tok", "Two", "tok2@example.com", "enc", "shared-token", LocalDate.of(1990, 1, 15))
     }
     assert(ex.getCause.isInstanceOf[TransactionCanceledException])
     val reasons = ex.getCause.asInstanceOf[TransactionCanceledException].cancellationReasons.asScala
@@ -120,7 +122,7 @@ class DynamoDbSuite extends FunSuite {
   }
 
   test("validateEmail returns true for valid token and sets status to EMAIL_VALIDATED") {
-    db.putUser("id-token", "Token", "User", "tokenuser@example.com", "enc", "validtoken64chars" + "0" * 47)
+    db.putUser("id-token", "Token", "User", "tokenuser@example.com", "enc", "validtoken64chars" + "0" * 47, LocalDate.of(1990, 1, 15))
     val user = db.getUserByEmail("tokenuser@example.com")
     val token = user.get("emailValidationToken").s()
     assert(db.validateEmail(token))
@@ -147,7 +149,7 @@ class DynamoDbSuite extends FunSuite {
   }
 
   test("getUserById retrieves a stored user") {
-    db.putUser("id-byid", "ById", "User", "byid@example.com", "enc", "token-byid")
+    db.putUser("id-byid", "ById", "User", "byid@example.com", "enc", "token-byid", LocalDate.of(1990, 1, 15))
     val user = db.getUserById("id-byid")
     assert(user.isDefined)
     assertEquals(user.get("firstName").s(), "ById")
@@ -159,7 +161,7 @@ class DynamoDbSuite extends FunSuite {
   }
 
   test("addMobile stores mobile and sets status to MOBILE_PENDING") {
-    db.putUser("id-mob1", "Mob", "One", "mob1@example.com", "enc", "token-mob1")
+    db.putUser("id-mob1", "Mob", "One", "mob1@example.com", "enc", "token-mob1", LocalDate.of(1990, 1, 15))
     db.validateEmail("token-mob1")
     db.addMobile("id-mob1", "+15551234567", "123456")
     val user = db.getUserById("id-mob1")
@@ -170,11 +172,11 @@ class DynamoDbSuite extends FunSuite {
   }
 
   test("addMobile with duplicate phone number fails") {
-    db.putUser("id-mob2", "Mob", "Two", "mob2@example.com", "enc", "token-mob2")
+    db.putUser("id-mob2", "Mob", "Two", "mob2@example.com", "enc", "token-mob2", LocalDate.of(1990, 1, 15))
     db.validateEmail("token-mob2")
     db.addMobile("id-mob2", "+15559999999", "111111")
 
-    db.putUser("id-mob3", "Mob", "Three", "mob3@example.com", "enc", "token-mob3")
+    db.putUser("id-mob3", "Mob", "Three", "mob3@example.com", "enc", "token-mob3", LocalDate.of(1990, 1, 15))
     db.validateEmail("token-mob3")
     val ex = intercept[ExecutionException] {
       db.addMobile("id-mob3", "+15559999999", "222222")
@@ -182,19 +184,19 @@ class DynamoDbSuite extends FunSuite {
     assert(ex.getCause.isInstanceOf[TransactionCanceledException])
   }
 
-  test("validateMobile sets status to MOBILE_VALIDATED and removes code") {
-    db.putUser("id-mob4", "Mob", "Four", "mob4@example.com", "enc", "token-mob4")
+  test("validateMobile sets status to AUTHENTICATED and removes code") {
+    db.putUser("id-mob4", "Mob", "Four", "mob4@example.com", "enc", "token-mob4", LocalDate.of(1990, 1, 15))
     db.validateEmail("token-mob4")
     db.addMobile("id-mob4", "+15551111111", "654321")
     assert(db.validateMobile("id-mob4", "654321"))
     val user = db.getUserById("id-mob4")
     assert(user.isDefined)
-    assertEquals(user.get("status").s(), UserStatus.MobileValidated.value)
+    assertEquals(user.get("status").s(), UserStatus.Authenticated.value)
     assert(!user.get.contains("mobileValidationCode"))
   }
 
   test("validateMobile with wrong code returns false") {
-    db.putUser("id-mob5", "Mob", "Five", "mob5@example.com", "enc", "token-mob5")
+    db.putUser("id-mob5", "Mob", "Five", "mob5@example.com", "enc", "token-mob5", LocalDate.of(1990, 1, 15))
     db.validateEmail("token-mob5")
     db.addMobile("id-mob5", "+15552222222", "999999")
     assert(!db.validateMobile("id-mob5", "000000"))

@@ -1,5 +1,7 @@
 package com.pcpitman.auth
 
+import java.time.LocalDate
+
 import org.apache.pekko.http.scaladsl.model.HttpEntity
 import org.apache.pekko.http.scaladsl.model.HttpResponse
 import org.apache.pekko.http.scaladsl.model.MediaTypes
@@ -54,13 +56,16 @@ class AuthApi(user: User) extends WebApi {
     endpointPath("api" / "v1" / "register") {
       put {
         parseEntity(json[RegisterRequest]) { req =>
-          user.register(req.firstName, req.lastName, req.email, req.password, req.validationUrlBase) match {
+          val birthDate = LocalDate.parse(req.birthDate)
+          user.register(req.firstName, req.lastName, req.email, req.password, birthDate, req.validationUrlBase) match {
             case Right(result) =>
               complete(jsonResponse(StatusCodes.Created, Map("id" -> result.id, "email" -> req.email, "token" -> result.token)))
             case Left(RegisterError.InvalidPassword(errors)) =>
               complete(jsonResponse(StatusCodes.BadRequest, Map("errors" -> errors)))
             case Left(RegisterError.EmailExists) =>
               complete(jsonResponse(StatusCodes.Conflict, Map("error" -> "email already registered")))
+            case Left(RegisterError.TooYoung) =>
+              complete(jsonResponse(StatusCodes.BadRequest, Map("error" -> "must be at least 16 years old")))
           }
         }
       }
@@ -87,7 +92,8 @@ class AuthApi(user: User) extends WebApi {
                 "email" -> data.email,
                 "status" -> data.status.value,
                 "firstName" -> data.firstName,
-                "lastName" -> data.lastName
+                "lastName" -> data.lastName,
+                "birthDate" -> data.birthDate
               )))
             case None =>
               complete(jsonResponse(StatusCodes.Unauthorized, Map("error" -> "invalid session")))
@@ -98,7 +104,8 @@ class AuthApi(user: User) extends WebApi {
     endpointPath("api" / "v1" / "update-profile") {
       put {
         parseEntity(json[UpdateProfileRequest]) { req =>
-          user.updateProfile(req.userId, req.firstName, req.lastName, req.email, req.password, req.validationUrlBase) match {
+          val birthDate = LocalDate.parse(req.birthDate)
+          user.updateProfile(req.userId, req.firstName, req.lastName, req.email, req.password, birthDate, req.validationUrlBase) match {
             case Right(()) =>
               complete(jsonResponse(StatusCodes.OK, Map("message" -> "profile updated")))
             case Left(UpdateProfileError.InvalidPassword(errors)) =>
@@ -107,6 +114,8 @@ class AuthApi(user: User) extends WebApi {
               complete(jsonResponse(StatusCodes.NotFound, Map("error" -> "user not found")))
             case Left(UpdateProfileError.EmailExists) =>
               complete(jsonResponse(StatusCodes.Conflict, Map("error" -> "email already registered")))
+            case Left(UpdateProfileError.TooYoung) =>
+              complete(jsonResponse(StatusCodes.BadRequest, Map("error" -> "must be at least 16 years old")))
           }
         }
       }
@@ -169,10 +178,10 @@ class AuthApi(user: User) extends WebApi {
   }
 }
 
-case class RegisterRequest(firstName: String, lastName: String, email: String, password: String, validationUrlBase: Option[String] = None)
+case class RegisterRequest(firstName: String, lastName: String, email: String, password: String, birthDate: String, validationUrlBase: Option[String] = None)
 case class LoginRequest(email: String, password: String)
 case class MeRequest(token: String)
-case class UpdateProfileRequest(userId: String, firstName: String, lastName: String, email: String, password: String, validationUrlBase: Option[String] = None)
+case class UpdateProfileRequest(userId: String, firstName: String, lastName: String, email: String, password: String, birthDate: String, validationUrlBase: Option[String] = None)
 case class AddMobileRequest(userId: String, phoneNumber: String)
 case class LogoutRequest(token: String)
 case class ValidateMobileRequest(userId: String, code: String)

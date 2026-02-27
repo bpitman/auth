@@ -23,6 +23,7 @@ class RegistrationFlowSuite extends IntegrationTestBase {
     // 3. Fill registration form and submit
     page.getByPlaceholder("First Name").fill(testFirstName)
     page.getByPlaceholder("Last Name").fill(testLastName)
+    page.locator("input[type=date]").fill("1990-01-15")
     page.getByPlaceholder("Email").fill(testEmail)
     page.getByPlaceholder("Password", new com.microsoft.playwright.Page.GetByPlaceholderOptions().setExact(true)).fill(testPassword)
     page.getByPlaceholder("Confirm Password").fill(testPassword)
@@ -56,19 +57,20 @@ class RegistrationFlowSuite extends IntegrationTestBase {
     page.waitForSelector("text=Session")
     assert(page.content().contains(testFirstName), "Session page should show first name")
     assert(page.content().contains(testLastName), "Session page should show last name")
+    assert(page.content().contains("1990-01-15"), "Session page should show birth date")
     assert(page.content().contains(testEmail), "Session page should show email")
-    assert(page.content().contains("MOBILE_VALIDATED"), "Session page should show MOBILE_VALIDATED status")
+    assert(page.content().contains("AUTHENTICATED"), "Session page should show AUTHENTICATED status")
 
     // 10. Logout → /login
     page.getByRole(AriaRole.BUTTON, new com.microsoft.playwright.Page.GetByRoleOptions().setName("Logout")).click()
     page.waitForURL("**/login")
 
-    // 11. Login with same credentials → /session (MOBILE_VALIDATED)
+    // 11. Login with same credentials → /session (AUTHENTICATED)
     page.getByPlaceholder("Email").fill(testEmail)
     page.getByPlaceholder("Password").fill(testPassword)
     page.getByRole(AriaRole.BUTTON, new com.microsoft.playwright.Page.GetByRoleOptions().setName("Sign In")).click()
     page.waitForURL("**/session")
-    page.waitForSelector("text=MOBILE_VALIDATED")
+    page.waitForSelector("text=AUTHENTICATED")
 
     page.close()
   }
@@ -87,6 +89,7 @@ class RegistrationFlowSuite extends IntegrationTestBase {
     page.waitForURL("**/register")
     page.getByPlaceholder("First Name").fill("Change")
     page.getByPlaceholder("Last Name").fill("Test")
+    page.locator("input[type=date]").fill("1990-01-15")
     page.getByPlaceholder("Email").fill(email1)
     page.getByPlaceholder("Password", new com.microsoft.playwright.Page.GetByPlaceholderOptions().setExact(true)).fill(testPassword)
     page.getByPlaceholder("Confirm Password").fill(testPassword)
@@ -146,7 +149,7 @@ class RegistrationFlowSuite extends IntegrationTestBase {
     page.getByPlaceholder("Verification Code").fill(otp1)
     page.getByRole(AriaRole.BUTTON, new com.microsoft.playwright.Page.GetByRoleOptions().setName("Verify")).click()
     page.waitForURL("**/session")
-    page.waitForSelector("text=MOBILE_VALIDATED")
+    page.waitForSelector("text=AUTHENTICATED")
 
     page.close()
   }

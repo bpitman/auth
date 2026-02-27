@@ -10,7 +10,7 @@ export default function SessionPage() {
     if (loading) return
     if (!user) {
       navigate('/login', { replace: true })
-    } else if (user.status !== 'MOBILE_VALIDATED') {
+    } else if (user.status !== 'AUTHENTICATED') {
       navigate('/register', { replace: true })
     }
   }, [user, loading, navigate])
@@ -30,6 +30,8 @@ export default function SessionPage() {
       <dl className="session-info">
         <dt>Name</dt>
         <dd>{user.firstName} {user.lastName}</dd>
+        <dt>Birth Date</dt>
+        <dd>{user.birthDate}</dd>
         <dt>Email</dt>
         <dd>{user.email}</dd>
         <dt>Status</dt>

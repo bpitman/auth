@@ -29,6 +29,7 @@ class LoginFlowSuite extends IntegrationTestBase {
 
     page.getByPlaceholder("First Name").fill("Test")
     page.getByPlaceholder("Last Name").fill("User")
+    page.locator("input[type=date]").fill("1990-01-15")
     page.getByPlaceholder("Email").fill("mismatch@example.com")
     page.getByPlaceholder("Password", new com.microsoft.playwright.Page.GetByPlaceholderOptions().setExact(true)).fill("TestPass1!xx")
     page.getByPlaceholder("Confirm Password").fill("DifferentPass1!xx")

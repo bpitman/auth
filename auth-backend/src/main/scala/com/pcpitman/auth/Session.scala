@@ -1,6 +1,7 @@
 package com.pcpitman.auth
 
 import java.security.SecureRandom
+import java.time.LocalDate
 
 import com.typesafe.scalalogging.LazyLogging
 import com.netflix.atlas.json3.Json
@@ -16,10 +17,11 @@ class Session(connection: StatefulRedisConnection[String, String]) extends LazyL
     email: String,
     status: UserStatus,
     firstName: String,
-    lastName: String
+    lastName: String,
+    birthDate: LocalDate
   ): String = {
     val token = newToken()
-    val data = SessionData(userId, email, status, firstName, lastName)
+    val data = SessionData(userId, email, status, firstName, lastName, birthDate.toString)
     val json = Json.encode(data)
     commands.setex(token, AuthConfig.sessionTtlSeconds, json).get()
     logger.info(s"Created session for userId=$userId")
@@ -59,5 +61,6 @@ case class SessionData(
   email: String,
   status: UserStatus,
   firstName: String,
-  lastName: String
+  lastName: String,
+  birthDate: String
 )

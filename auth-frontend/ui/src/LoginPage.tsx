@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 
 function isRegistrationComplete(status: string) {
-  return status === 'MOBILE_VALIDATED'
+  return status === 'AUTHENTICATED'
 }
 
 export default function LoginPage() {

@@ -6,6 +6,7 @@ export interface UserInfo {
   status: string
   firstName: string
   lastName: string
+  birthDate: string
 }
 
 interface AuthContextType {

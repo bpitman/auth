@@ -1,5 +1,7 @@
 package com.pcpitman.auth
 
+import java.time.LocalDate
+
 import scala.jdk.CollectionConverters.*
 
 import com.typesafe.scalalogging.LazyLogging
@@ -19,7 +21,8 @@ class DynamoDb(client: DynamoDbAsyncClient) extends LazyLogging {
     lastName: String,
     email: String,
     encryptedPassword: String,
-    emailValidationToken: String
+    emailValidationToken: String,
+    birthDate: LocalDate
   ): Unit = {
     val userItem = Map(
       "id"                   -> AttributeValue.fromS(id),
@@ -28,7 +31,8 @@ class DynamoDb(client: DynamoDbAsyncClient) extends LazyLogging {
       "email"                -> AttributeValue.fromS(email),
       "password"             -> AttributeValue.fromS(encryptedPassword),
       "status"               -> AttributeValue.fromS(UserStatus.Registered.value),
-      "emailValidationToken" -> AttributeValue.fromS(emailValidationToken)
+      "emailValidationToken" -> AttributeValue.fromS(emailValidationToken),
+      "birthDate"            -> AttributeValue.fromS(birthDate.toString)
     ).asJava
     val emailItem = Map(
       "id" -> AttributeValue.fromS(s"EMAIL#$email")
@@ -132,7 +136,8 @@ class DynamoDb(client: DynamoDbAsyncClient) extends LazyLogging {
     oldEmail: String,
     encryptedPassword: String,
     newEmailValidationToken: String,
-    oldEmailValidationToken: String
+    oldEmailValidationToken: String,
+    birthDate: LocalDate
   ): Unit = {
     val items = List.newBuilder[TransactWriteItem]
     // Update the main user record
@@ -140,7 +145,7 @@ class DynamoDb(client: DynamoDbAsyncClient) extends LazyLogging {
       Update.builder()
         .tableName(DynamoDbConfig.tableName)
         .key(Map("id" -> AttributeValue.fromS(id)).asJava)
-        .updateExpression("SET firstName = :fn, lastName = :ln, email = :e, #p = :p, emailValidationToken = :t")
+        .updateExpression("SET firstName = :fn, lastName = :ln, email = :e, #p = :p, emailValidationToken = :t, birthDate = :bd")
         .conditionExpression("#s = :reg")
         .expressionAttributeNames(Map("#p" -> "password", "#s" -> "status").asJava)
         .expressionAttributeValues(Map(
@@ -149,6 +154,7 @@ class DynamoDb(client: DynamoDbAsyncClient) extends LazyLogging {
           ":e"   -> AttributeValue.fromS(newEmail),
           ":p"   -> AttributeValue.fromS(encryptedPassword),
           ":t"   -> AttributeValue.fromS(newEmailValidationToken),
+          ":bd"  -> AttributeValue.fromS(birthDate.toString),
           ":reg" -> AttributeValue.fromS(UserStatus.Registered.value)
         ).asJava)
         .build()
@@ -234,7 +240,7 @@ class DynamoDb(client: DynamoDbAsyncClient) extends LazyLogging {
                 .conditionExpression("mobileValidationCode = :c AND #s = :cur")
                 .expressionAttributeNames(Map("#s" -> "status").asJava)
                 .expressionAttributeValues(Map(
-                  ":s"   -> AttributeValue.fromS(UserStatus.MobileValidated.value),
+                  ":s"   -> AttributeValue.fromS(UserStatus.Authenticated.value),
                   ":c"   -> AttributeValue.fromS(code),
                   ":cur" -> AttributeValue.fromS(UserStatus.MobilePending.value)
                 ).asJava)

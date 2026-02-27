@@ -1,6 +1,8 @@
 package com.pcpitman.auth
 
 import java.security.SecureRandom
+import java.time.LocalDate
+import java.time.Period
 import java.util.UUID
 import java.util.concurrent.ExecutionException
 
@@ -10,14 +12,16 @@ import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledExcepti
 
 class User(password: Password, dynamoDb: DynamoDb, ses: Ses, sns: Sns, session: Session) {
 
-  def register(firstName: String, lastName: String, email: String, rawPassword: String, validationUrlBase: Option[String] = None): Either[RegisterError, RegisterResult] = {
+  def register(firstName: String, lastName: String, email: String, rawPassword: String, birthDate: LocalDate, validationUrlBase: Option[String] = None): Either[RegisterError, RegisterResult] = {
+    if (Period.between(birthDate, LocalDate.now()).getYears < 16)
+      return Left(RegisterError.TooYoung)
     val errors = password.validate(rawPassword)
     if (errors.nonEmpty) return Left(RegisterError.InvalidPassword(errors))
     val id = UUID.randomUUID().toString
     val token = newToken()
     val encrypted = password.encrypt(rawPassword)
     try {
-      dynamoDb.putUser(id, firstName, lastName, email, encrypted, token)
+      dynamoDb.putUser(id, firstName, lastName, email, encrypted, token, birthDate)
     } catch {
       case e: ExecutionException if e.getCause.isInstanceOf[TransactionCanceledException] =>
         val reasons = e.getCause.asInstanceOf[TransactionCanceledException].cancellationReasons.asScala
@@ -27,7 +31,7 @@ class User(password: Password, dynamoDb: DynamoDb, ses: Ses, sns: Sns, session: 
           throw e
     }
     ses.sendValidationEmail(email, token, validationUrlBase)
-    val sessionToken = session.create(id, email, UserStatus.Registered, firstName, lastName)
+    val sessionToken = session.create(id, email, UserStatus.Registered, firstName, lastName, birthDate)
     Right(RegisterResult(id, sessionToken))
   }
 
@@ -42,7 +46,8 @@ class User(password: Password, dynamoDb: DynamoDb, ses: Ses, sns: Sns, session: 
         val status = UserStatus.fromString(user("status").s())
         val firstName = user("firstName").s()
         val lastName = user("lastName").s()
-        val token = session.create(userId, email, status, firstName, lastName)
+        val birthDate = LocalDate.parse(user("birthDate").s())
+        val token = session.create(userId, email, status, firstName, lastName, birthDate)
         Right(LoginResult(userId, token, status))
     }
   }
@@ -51,7 +56,9 @@ class User(password: Password, dynamoDb: DynamoDb, ses: Ses, sns: Sns, session: 
     session.get(token)
   }
 
-  def updateProfile(userId: String, firstName: String, lastName: String, email: String, rawPassword: String, validationUrlBase: Option[String] = None): Either[UpdateProfileError, Unit] = {
+  def updateProfile(userId: String, firstName: String, lastName: String, email: String, rawPassword: String, birthDate: LocalDate, validationUrlBase: Option[String] = None): Either[UpdateProfileError, Unit] = {
+    if (Period.between(birthDate, LocalDate.now()).getYears < 16)
+      return Left(UpdateProfileError.TooYoung)
     val errors = password.validate(rawPassword)
     if (errors.nonEmpty) return Left(UpdateProfileError.InvalidPassword(errors))
     val userOpt = dynamoDb.getUserById(userId)
@@ -63,7 +70,7 @@ class User(password: Password, dynamoDb: DynamoDb, ses: Ses, sns: Sns, session: 
         val encrypted = password.encrypt(rawPassword)
         val emailToken = newToken()
         try {
-          dynamoDb.updateUser(userId, firstName, lastName, email, oldEmail, encrypted, emailToken, oldToken)
+          dynamoDb.updateUser(userId, firstName, lastName, email, oldEmail, encrypted, emailToken, oldToken, birthDate)
         } catch {
           case e: ExecutionException if e.getCause.isInstanceOf[TransactionCanceledException] =>
             val reasons = e.getCause.asInstanceOf[TransactionCanceledException].cancellationReasons.asScala
@@ -109,7 +116,7 @@ class User(password: Password, dynamoDb: DynamoDb, ses: Ses, sns: Sns, session: 
   def validateMobile(userId: String, code: String, sessionToken: Option[String] = None): Boolean = {
     val valid = dynamoDb.validateMobile(userId, code)
     if (valid) {
-      sessionToken.foreach(st => session.updateStatus(st, UserStatus.MobileValidated))
+      sessionToken.foreach(st => session.updateStatus(st, UserStatus.Authenticated))
     }
     valid
   }
@@ -131,6 +138,7 @@ sealed trait RegisterError
 object RegisterError {
   case class InvalidPassword(errors: List[String]) extends RegisterError
   case object EmailExists extends RegisterError
+  case object TooYoung extends RegisterError
 }
 
 case class RegisterResult(id: String, token: String)
@@ -147,6 +155,7 @@ object UpdateProfileError {
   case class InvalidPassword(errors: List[String]) extends UpdateProfileError
   case object NotFound extends UpdateProfileError
   case object EmailExists extends UpdateProfileError
+  case object TooYoung extends UpdateProfileError
 }
 
 sealed trait MobileError

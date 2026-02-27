@@ -12,6 +12,15 @@ function validatePassword(password: string): string[] {
   return errors
 }
 
+function isAtLeast16(dateStr: string): boolean {
+  const birth = new Date(dateStr + 'T00:00:00')
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age >= 16
+}
+
 function formatPhone(digits: string): string {
   if (digits.length <= 3) return `(${digits}`
   if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
@@ -32,6 +41,7 @@ export default function RegisterPage() {
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [birthDate, setBirthDate] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -48,12 +58,13 @@ export default function RegisterPage() {
     if (user && status === 'REGISTERED') {
       setFirstName(user.firstName)
       setLastName(user.lastName)
+      setBirthDate(user.birthDate)
       setEmail(user.email)
     }
   }, [user, status])
 
   useEffect(() => {
-    if (!loading && user && status === 'MOBILE_VALIDATED') {
+    if (!loading && user && status === 'AUTHENTICATED') {
       navigate('/session', { replace: true })
     }
   }, [loading, user, status, navigate])
@@ -98,6 +109,13 @@ export default function RegisterPage() {
             placeholder="Last Name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
+            required
+          />
+          <input
+            type="date"
+            placeholder="Birth Date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
             required
           />
           <input
@@ -217,6 +235,10 @@ export default function RegisterPage() {
     e.preventDefault()
     setErrors([])
 
+    if (!isAtLeast16(birthDate)) {
+      setErrors(['must be at least 16 years old'])
+      return
+    }
     if (password !== confirmPassword) {
       setErrors(['passwords do not match'])
       return
@@ -230,7 +252,7 @@ export default function RegisterPage() {
     const res = await fetch('/register', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ firstName, lastName, email, password }),
+      body: JSON.stringify({ firstName, lastName, email, password, birthDate }),
     })
 
     const data = await res.json()
@@ -248,6 +270,10 @@ export default function RegisterPage() {
     e.preventDefault()
     setErrors([])
 
+    if (!isAtLeast16(birthDate)) {
+      setErrors(['must be at least 16 years old'])
+      return
+    }
     if (password !== confirmPassword) {
       setErrors(['passwords do not match'])
       return
@@ -261,7 +287,7 @@ export default function RegisterPage() {
     const res = await fetch('/update-profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user!.userId, firstName, lastName, email, password }),
+      body: JSON.stringify({ userId: user!.userId, firstName, lastName, email, password, birthDate }),
     })
 
     const data = await res.json()

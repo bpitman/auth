@@ -1,6 +1,7 @@
 package com.pcpitman.auth
 
 import java.time.Clock
+import java.time.LocalDate
 
 import munit.FunSuite
 
@@ -47,7 +48,7 @@ class UserSuite extends FunSuite {
   }
 
   test("register returns token (auto-login)") {
-    val result = user.register("Alice", "Wonder", "alice@example.com", "Password1!!")
+    val result = user.register("Alice", "Wonder", "alice@example.com", "Password1!!", LocalDate.of(1990, 1, 15))
     assert(result.isRight)
     val reg = result.toOption.get
     assert(reg.id.nonEmpty)
@@ -57,10 +58,11 @@ class UserSuite extends FunSuite {
     assert(data.isDefined)
     assertEquals(data.get.userId, reg.id)
     assertEquals(data.get.email, "alice@example.com")
+    assertEquals(data.get.birthDate, "1990-01-15")
   }
 
   test("login with valid credentials returns token") {
-    user.register("Bob", "Builder", "bob@example.com", "Password1!!")
+    user.register("Bob", "Builder", "bob@example.com", "Password1!!", LocalDate.of(1985, 6, 20))
     val result = user.login("bob@example.com", "Password1!!")
     assert(result.isRight)
     val login = result.toOption.get
@@ -71,10 +73,11 @@ class UserSuite extends FunSuite {
     val data = session.get(login.token)
     assert(data.isDefined)
     assertEquals(data.get.email, "bob@example.com")
+    assertEquals(data.get.birthDate, "1985-06-20")
   }
 
   test("login with wrong password returns InvalidCredentials") {
-    user.register("Carol", "Singer", "carol@example.com", "Password1!!")
+    user.register("Carol", "Singer", "carol@example.com", "Password1!!", LocalDate.of(1992, 3, 10))
     val result = user.login("carol@example.com", "WrongPassword1!!")
     assert(result.isLeft)
     assertEquals(result.swap.toOption.get, LoginError.InvalidCredentials)
@@ -86,8 +89,14 @@ class UserSuite extends FunSuite {
     assertEquals(result.swap.toOption.get, LoginError.InvalidCredentials)
   }
 
+  test("register rejects underage user") {
+    val result = user.register("Young", "User", "young@example.com", "Password1!!", LocalDate.now().minusYears(15))
+    assert(result.isLeft)
+    assertEquals(result.swap.toOption.get, RegisterError.TooYoung)
+  }
+
   test("logout deletes session") {
-    user.register("Dan", "Dare", "dan@example.com", "Password1!!")
+    user.register("Dan", "Dare", "dan@example.com", "Password1!!", LocalDate.of(1988, 12, 1))
     val loginResult = user.login("dan@example.com", "Password1!!").toOption.get
     assert(session.get(loginResult.token).isDefined)
     user.logout(loginResult.token)
