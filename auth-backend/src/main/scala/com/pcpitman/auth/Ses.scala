@@ -5,7 +5,7 @@ import scala.io.Source
 import com.typesafe.scalalogging.LazyLogging
 
 import software.amazon.awssdk.services.ses.SesAsyncClient
-import software.amazon.awssdk.services.ses.model._
+import software.amazon.awssdk.services.ses.model.*
 
 class Ses(client: SesAsyncClient) extends LazyLogging {
 

@@ -3,13 +3,13 @@ package com.pcpitman.auth
 import java.time.Clock
 import java.util.concurrent.ExecutionException
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 import munit.FunSuite
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.dynamodb.MockDynamoDbAsyncClient
-import software.amazon.awssdk.services.dynamodb.model._
+import software.amazon.awssdk.services.dynamodb.model.*
 
 class DynamoDbSuite extends FunSuite {
 
@@ -42,7 +42,7 @@ class DynamoDbSuite extends FunSuite {
   }
 
   test("init adds missing GSIs to existing table") {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     val client = MockDynamoDbAsyncClient.newProxy(Clock.systemUTC())
     // Create table with only email-index, no token-index
     val throughput = ProvisionedThroughput.builder()

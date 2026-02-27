@@ -6,7 +6,7 @@ import munit.FunSuite
 
 import software.amazon.awssdk.services.dynamodb.MockDynamoDbAsyncClient
 import software.amazon.awssdk.services.kms.MockKmsAsyncClient
-import software.amazon.awssdk.services.kms.model._
+import software.amazon.awssdk.services.kms.model.*
 import software.amazon.awssdk.services.ses.MockSesAsyncClient
 import software.amazon.awssdk.services.sns.MockSnsAsyncClient
 

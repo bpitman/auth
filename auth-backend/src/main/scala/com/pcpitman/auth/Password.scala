@@ -7,7 +7,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.services.kms.KmsAsyncClient
-import software.amazon.awssdk.services.kms.model._
+import software.amazon.awssdk.services.kms.model.*
 
 class Password(kmsClient: KmsAsyncClient) extends LazyLogging {
 

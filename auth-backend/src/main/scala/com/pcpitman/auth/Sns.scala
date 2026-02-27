@@ -3,7 +3,7 @@ package com.pcpitman.auth
 import com.typesafe.scalalogging.LazyLogging
 
 import software.amazon.awssdk.services.sns.SnsAsyncClient
-import software.amazon.awssdk.services.sns.model._
+import software.amazon.awssdk.services.sns.model.*
 
 class Sns(client: SnsAsyncClient) extends LazyLogging {
 

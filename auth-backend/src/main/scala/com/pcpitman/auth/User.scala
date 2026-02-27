@@ -4,7 +4,7 @@ import java.security.SecureRandom
 import java.util.UUID
 import java.util.concurrent.ExecutionException
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException
 

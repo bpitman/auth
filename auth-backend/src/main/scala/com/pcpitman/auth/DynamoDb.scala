@@ -1,15 +1,15 @@
 package com.pcpitman.auth
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 import com.typesafe.scalalogging.LazyLogging
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
-import software.amazon.awssdk.services.dynamodb.model._
+import software.amazon.awssdk.services.dynamodb.model.*
 
 class DynamoDb(client: DynamoDbAsyncClient) extends LazyLogging {
 
-  import DynamoDb._
+  import DynamoDb.*
 
   DynamoDb.init(client)
 
