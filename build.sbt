@@ -88,7 +88,6 @@ lazy val `auth-backend` = (project in file("auth-backend"))
   .settings(
     name := "auth-backend",
     scalaVersion := "3.8.1",
-    crossScalaVersions := Seq("2.13.18", "3.8.1"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
     libraryDependencies ++= Seq(
       Dependencies.aws2DynamoDB,
